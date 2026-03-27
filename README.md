@@ -24,7 +24,7 @@ docker run -d \
   -e CELERY_BROKER_URL=redis://your-redis-host:6379/0 \
   -p 8585:8585 \
   --name leek \
-  leek/leek
+  wmbitfarm/leek
 ```
 
 Open [http://localhost:8585](http://localhost:8585).
@@ -89,7 +89,7 @@ docker run -d \
   -e CELERY_BROKER_URL=redis://redis:6379/0 \
   -p 8585:8585 \
   -v leek-data:/app \
-  leek/leek
+  wmbitfarm/leek
 ```
 
 ### Using PostgreSQL
@@ -101,7 +101,7 @@ docker run -d \
   -e CELERY_BROKER_URL=redis://redis:6379/0 \
   -e DATABASE_URL=postgresql+asyncpg://user:pass@postgres:5432/leek \
   -p 8585:8585 \
-  leek/leek
+  wmbitfarm/leek
 ```
 
 Install the `asyncpg` driver — it's included in the Docker image. If running outside Docker, install the `postgres` extra: `pip install leek[postgres]`.
@@ -111,7 +111,7 @@ Install the `asyncpg` driver — it's included in the Docker image. If running o
 ```yaml
 services:
   leek:
-    image: leek/leek
+    image: wmbitfarm/leek
     ports:
       - "8585:8585"
     environment:
