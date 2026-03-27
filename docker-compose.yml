@@ -1,0 +1,56 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # Sample Celery worker with demo tasks
+  sample-worker:
+    build:
+      context: .
+      dockerfile: sample_worker/Dockerfile
+    depends_on:
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    command: celery -A tasks worker -E --loglevel=info
+
+  # Leek backend (FastAPI)
+  leek:
+    build: .
+    depends_on:
+      - redis
+    ports:
+      - "8585:8585"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    volumes:
+      - ./backend:/app/backend
+      - leek-data:/app/data
+
+  # Vite dev server for frontend with HMR
+  frontend:
+    image: node:22-alpine
+    working_dir: /app
+    depends_on:
+      - leek
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+    command: sh -c "npm install && npm run dev -- --host"
+
+  # Task generator — periodically submits demo tasks
+  task-generator:
+    build:
+      context: .
+      dockerfile: sample_worker/Dockerfile
+    depends_on:
+      - redis
+      - sample-worker
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    command: python generate_tasks.py
+
+volumes:
+  leek-data:
